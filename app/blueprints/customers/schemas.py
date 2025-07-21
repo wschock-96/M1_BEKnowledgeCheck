@@ -4,6 +4,7 @@ from app.models import Customer
 class CustomerSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Customer
+        include_relationships = True
 
 customer_schema = CustomerSchema()
 customers_schema = CustomerSchema(many=True)

@@ -4,9 +4,11 @@ from sqlalchemy import select
 from . import customers_bp
 from .schemas import customer_schema, customers_schema
 from app.models import Customer, db
+from app.extensions import limiter, cache
 
 
 @customers_bp.route('/', methods=['POST'])
+@limiter.limit("15 per hour", override_defaults=True)
 def create_customer():
     try:
         customer_data = customer_schema.load(request.json)
@@ -26,15 +28,25 @@ def create_customer():
     return customer_schema.jsonify(new_customer), 201
 
 @customers_bp.route('/', methods=['GET'])
+@cache.cached(timeout=30)
 def get_customers():
-    query = select(Customer)
-    customers = db.session.execute(query).scalars().all()
+    try:
+        page = int(request.args.get('page'))
+        per_page = int(request.args.get('per_page'))
+        query = select(Customer)
+        customers = db.session.paginate(query, page=page, per_page=per_page)
+        
+        return customers_schema.jsonify(customers), 200 
 
-    if customers:
-        return customers_schema.jsonify(customers), 200
-    return jsonify("message:" "no customers found"), 200
+    except:
+        query = select(Customer)
+        customers = db.session.execute(query).scalars().all()
 
-@customers_bp.route('//<int:id>', methods=['GET'])
+        if customers:
+            return customers_schema.jsonify(customers), 200
+        return jsonify("message:" "no customers found"), 200
+
+@customers_bp.route('/<int:id>', methods=['GET'])
 def get_customer(id):
     customer = db.session.get(Customer, id)
 
@@ -43,6 +55,7 @@ def get_customer(id):
     return jsonify({"error": "customer id not found"}), 404
 
 @customers_bp.route('/customers/<int:id>', methods=['PUT'])
+@limiter.limit("15 per hour", override_defaults=True)
 def update_customer(id):
     customer = db.session.get(Customer, id)
 
@@ -61,6 +74,7 @@ def update_customer(id):
     return customer_schema.jsonify(customer), 200
 
 @customers_bp.route('//<int:id>', methods=['DELETE'])
+@limiter.limit("3 per hour", override_defaults=True)
 def delete_customer(id):
     customer = db.session.get(Customer, id)
 
@@ -70,3 +84,20 @@ def delete_customer(id):
     db.session.delete(customer)
     db.session.commit()
     return jsonify({"message": f"Customer {id} deleted successfully"}), 200
+
+@customers_bp.route("/most-valuable", methods=['GET'])
+def get_most_valuable():
+    customers = db.session.execute(select(Customer)).scalars().all()
+    customers.sort(key=lambda customer: len(customer.tickets), reverse=True)
+    return customers_schema.jsonify(customers), 200
+
+@customers_bp.route("/search", methods=['GET'])
+def search_customers():
+    email = request.args.get('email')
+
+    query = select(Customer).where(Customer.email.ilike(f"%{email}%"))
+    customer = db.session.execute(query).scalars().first()
+
+    return customer_schema.jsonify(customer)
+
+    

@@ -7,4 +7,5 @@ class MechanicSchema(ma.SQLAlchemyAutoSchema):
 
 mechanic_schema = MechanicSchema()
 mechanics_schema = MechanicSchema(many=True)
+login_schema = MechanicSchema(exclude=('name', 'salary'))
 
