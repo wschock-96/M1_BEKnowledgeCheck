@@ -1,0 +1,902 @@
+swagger: '2.0'
+info:
+  title: "Mechanic API"
+  description: "API for managing Mechanic Operations"
+  version: "1.0.0"
+host: "127.0.0.1:5000"
+schemes:
+  - "http"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+
+securityDefinitions:
+  bearerAuth:
+    type: apiKey
+    name: Authorization
+    in: header
+
+
+paths:
+  /serialized-parts:
+    post:
+      tags: 
+        - Serialized Parts
+      summary: Create a new Serialized Part
+      description: Send a JSON payload, includes part info to create a new serialized part in the database.
+      parameters:
+        - in: body
+          name: body
+          description: Serialized part information that needs to be created
+          required: true
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              ticket_id:
+                type: integer
+              brand:
+                type: string
+              part:
+                type: string
+              part_id:
+                type: number
+                format: float
+      responses:
+        '200':
+          description: Serialized Part created successfully
+          schema:
+            type: object
+            properties:
+              ticket_id:
+                type: integer
+              brand:
+                type: string
+              part:
+                type: string
+              part_id:
+                type: number
+                format: float
+
+    get:
+      tags: 
+        - Serialized Parts
+      summary: Get all Serialized Parts
+      description: Retrieve a list of all serialized parts.
+      responses:
+        '200':
+          description: Successful Retrieval 
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SerializedPartResponse'
+          examples:
+            application/json:
+              "desc_id": 1,
+              "id": 1,
+              "ticket_id": 1
+
+  /serialized-parts/{id}:
+    put:
+      tags: 
+        - Serialized Parts
+      summary: Update a Serialized Part
+      description: Update an existing serialized part by its ID.
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Serialized Part ID to update
+        - in: body
+          name: body
+          description: Updated serialized part information that needs to be entered in
+          required: true
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              ticket_id:
+                type: integer
+              brand:
+                type: string
+              part:
+                type: string
+              part_id:
+                type: number
+                format: float
+      responses:
+        '200':
+          description: Serialized Part updated successfully
+          schema:
+            $ref: '#/definitions/SerializedPartResponse'
+
+    delete:
+      tags: 
+        - Serialized Parts
+      summary: Delete a Serialized Part by ID
+      description: Delete an existing serialized part by its ID.
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Serialized Part ID to delete
+      responses:
+        '200':
+          description: Serialized Part deleted successfully
+
+  /serialized-parts/stock/{desc_id}:
+    get:
+      tags: 
+        - Serialized Parts
+      summary: Get Serialized Parts by Description ID
+      description: Retrieve all serialized parts associated with a specific part description ID.
+      parameters:
+        - in: path
+          name: desc_id
+          type: integer
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Part Description ID to retrieve serialized parts for
+      responses:
+        '200':
+          description: Successful Retrieval 
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SerializedPartResponse'
+          examples:
+            application/json:
+              - "Item": "tires"
+                "Quantity": 5
+
+
+                
+  /part-descriptions:
+    post:
+      tags: 
+        - Part Descriptions
+      summary: Create a new Part Description
+      description: Send a JSON payload, includes part info to create a new part description in the database.
+      parameters:
+        - in: body
+          name: body
+          description: Part information that needs to be created
+          required: true
+          schema:
+              $ref: '#/definitions/PartDescriptionPayload'
+      responses:
+        '200':
+          description: Part created successfully
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+              brand:
+                type: string
+              part:
+                type: string
+              price:
+                type: number
+                format: float
+
+    get:
+      tags: 
+        - Part Descriptions
+      summary: Get all Part Descriptions
+      description: Retrieve a list of all part descriptions.
+      responses:
+        '200':
+          description: Successful Retrieval 
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PartDescriptionResponse'
+          examples:
+            application/json:
+              - id: 1
+                brand: "ACME"
+                part: "Brake Pad"
+                price: 49.99
+              - id: 2
+                brand: "WIX"
+                part: "Oil Filter"
+                price: 19.99
+
+  /part-descriptions/{id}:
+    put:
+      tags: 
+        - Part Descriptions
+      summary: Update a Part Description
+      description: Update an existing part description by its ID.
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Part ID to update
+        - in: body
+          name: body
+          description: Updated part information that needs to be entered in
+          required: true
+          schema:
+            $ref: '#/definitions/PartDescriptionPayload'
+      responses:
+        '200':
+          description: Part updated successfully
+          schema:
+            $ref: '#/definitions/PartDescriptionResponse'
+
+    delete:
+      tags: 
+        - Part Descriptions
+      summary: Delete a Part by ID
+      description: Delete an existing part description by its ID.
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Part ID to delete
+      responses:
+        '200':
+          description: Part deleted successfully
+
+
+
+
+
+
+
+  /service-tickets:
+    post:
+      tags: 
+        - Service Tickets
+      summary: Create a new Service Ticket
+      description: Send a JSON payload, includes ticket info and mechanic token authentication to create a new service ticket in the database. 
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: body
+          name: body
+          description: Ticket information that needs to be created
+          required: true
+          schema:
+            type: object
+            properties:
+              customer id:
+                type: integer
+              date:
+                type: string
+              service_desc:
+                type: string
+      responses:
+        '200':
+          description: Ticket created successfully
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+              customer_id:
+                type: integer
+              date:
+                type: string
+              service_desc:
+                type: string
+
+    get:
+      tags: 
+        - Service Tickets
+      summary: Get all Service Tickets
+      description: Retrieve a list of all service tickets.
+      responses:
+        '200':
+          description: Successful Retrieval 
+          schema:
+            $ref: '#/definitions/ServiceTicketResponse'
+          examples:
+            application/json:
+              - id: 1
+                customer_id: 1
+                date: "2023-10-01"
+                service_desc: "Oil Change"
+              - id: 2
+                customer_id: 2
+                date: "2023-10-02"
+                service_desc: "Tire Rotation"
+
+
+
+
+
+
+
+  /service-tickets/{ticket-id}/add-part/{part_id}:
+    put:
+      tags:
+        - Service Tickets
+      summary: Add Part to Service Ticket
+      description: Add a part to an existing service ticket by providing the ticket ID and part ID.
+      parameters:
+        - in: path
+          name: ticket_id
+          type: integer
+          description: Service Ticket ID to update
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - in: path
+          name: part_id
+          type: integer
+          description: Part ID to add to the ticket
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Part added to Service Ticket successfully
+          schema:
+            $ref: '#/definitions/MechanicTicketResponse'
+          examples:
+            application/json:
+              message: "Part added to Service Ticket successfully"
+              tickets:
+                - id: 1
+                  customer_id: 1
+                  date: "2023-10-01"
+                  service_desc: "Oil Change"
+                  
+
+
+
+
+
+
+  /service-tickets/{ticket_id}/add-mechanic/{mechanic_id}:
+    put:
+      tags:
+        - Service Tickets
+      summary: Add Mechanic to Service Ticket
+      description: Add a mechanic to an existing service ticket by providing the ticket ID and mechanic ID.
+      parameters:
+        - in: path
+          name: ticket_id
+          type: integer
+          description: Service Ticket ID to update
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - in: path
+          name: mechanic_id
+          type: integer
+          description: Mechanic ID to add to the ticket
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Mechanic added to Service Ticket successfully
+          schema:
+            $ref: '#/definitions/MechanicTicketResponse'
+          examples:
+            application/json:
+              message: "Mechanic added to Service Ticket successfully"
+              tickets:
+                - id: 1
+                  customer_id: 1
+                  date: "2023-10-01"
+                  service_desc: "Oil Change"
+
+
+
+
+
+
+
+  /service-tickets/{ticket_id}/remove-mechanic/{mechanic_id}:
+    put:
+      tags:
+        - Service Tickets
+      summary: Remove Mechanic from Service Ticket
+      description: Remove a mechanic from an existing service ticket by providing the ticket ID and mechanic ID.
+      parameters:
+        - in: path
+          name: ticket_id
+          type: integer
+          description: Service Ticket ID to update
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - in: path
+          name: mechanic_id
+          type: integer
+          description: Mechanic ID to remove from the ticket
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Mechanic removed from Service Ticket successfully
+          schema:
+            $ref: '#/definitions/MechanicTicketResponse'
+
+
+
+
+
+
+
+  /mechanics/login: #endpoint
+    post: # HTTP method
+      tags: 
+        - Mechanics
+      summary: Mechanic Login (GENERATE TOKEN)
+      description: Pass mechanic credentials (email and password) to log in and if valid user, receive a token.
+      parameters:
+        - in: body
+          name: body
+          description: Login credentials for the mechanic
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string      
+      responses:
+        '200':
+          description: Log-In Successful
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+          examples:
+            application/json:
+              message: "Login successful"
+              token: "eyJhbGciOiJIUz..."
+              user: 
+                email: "johndoe@email.com"
+                id: 5
+                name: "John Doe"
+                password: "scrypt:32768:8:1$ETbhe..."
+                salary: 100000.0
+                tickets: []
+
+
+
+
+
+
+
+  /mechanics: #endpoint
+    post: # HTTP method
+      tags:
+        - Mechanics
+      summary: Create a new mechanic
+      description: Send a JSON payload, includes mechanic info to create a new mechanic in the database.
+      parameters:
+        - in: body
+          name: body
+          description: Mechanic information that needs to be created
+          required: true
+          schema:
+            $ref: '#/definitions/MechanicPayload'
+      responses:
+        '200':
+          description: Mechanic created successfully
+          schema:
+            $ref: '#/definitions/MechanicResponse'
+          examples:
+            application/json:
+              id: 1
+              name: "John Doe"
+              email: "johndoe@email.com"
+              password: "123"
+              salary: "100000.0"
+              tickets: []
+
+    get:
+      tags:
+        - Mechanics
+      summary: Get Mechanics
+      description: Retrieve a list of all mechanics.
+      responses:
+        '200':
+          description: Successful Retrieval 
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/MechanicListResponse'
+          examples:
+            application/json:
+              - id: 1
+                name: "John Doe"
+                email: "johndoe@email.com"
+                password: "scrypt:32768:8:1$ETbhe..."
+                salary: 100000.0
+                tickets: []
+
+
+
+
+
+
+  /mechanics/{id}:
+    put: 
+      tags:
+        - Mechanics
+      summary: Update a Mechanic (TOKEN REQUIRED)
+      description: Update an exsiting Mechanic, requires a valid token from a logged-in mechanic.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: body
+          name: body
+          description: Updated Mechanic information that needs to be entered in
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              email:
+                type: string
+              password:
+                type: string
+              salary:
+                type: integer
+            $ref: '#/definitions/MechanicPayload'
+      responses:
+        '200':
+          description: Mechanic updated successfully
+          schema:
+            $ref: '#/definitions/MechanicResponse'
+          examples:
+            application/json:
+              id: 1
+              name: "John Doe"
+              email: "johndoe@email.com"
+              password: "123"
+              salary: "100000.0"
+              tickets: []
+
+    delete:
+      tags:
+        - Mechanics
+      summary: Delete a Mechanic using their ID
+      description: Delete an existing mechanic by their ID
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+            minimum: 1
+          description: Mechanic ID to delete
+      responses:
+        '200':
+          description: Mechanic deleted successfully
+
+
+
+
+
+
+  /customers:
+    post:
+      tags: 
+        - Customers
+      summary: Create a new Customer
+      description: Send a JSON payload, includes customer info to create a new customer in the database.
+      parameters:
+        - in: body
+          name: body
+          description: Customer information entered in order for Customer to be created
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              email:
+                type: string
+              phone:
+                type: string
+      responses:
+        '200':
+          description: Customer created successfully
+          schema:
+            $ref: '#/definitions/CustomerResponse'
+          examples:
+            application/json:
+              id: 1
+              name: "Jane Doe"
+              email: "janedoe@email.com"
+              phone: "1234567890"
+
+
+
+
+
+
+  /customers/{id}:
+    get:
+      tags: 
+        - Customers
+      summary: Get a Customer by ID
+      description: Retrieve a specific customer by their ID.
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: User ID
+      responses:
+        '200':
+          description:  retrieved successfully
+          schema:
+            $ref: '#/definitions/CustomerResponse'
+
+    put:
+      tags: 
+        - Customers
+      summary: Update a Customer by ID
+      description: Update an existing customer by their ID.
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Customer ID to update
+        - in: body
+          name: body
+          description: Updated customer information that needs to be entered in
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              email:
+                type: string
+              phone:
+                type: string
+      responses:
+        '200':
+          description: Customer updated successfully
+          schema:
+            $ref: '#/definitions/CustomerResponse'
+
+    delete:
+      tags: 
+        - Customers
+      summary: Delete a Customer by ID
+      description: Delete an existing customer by their ID.
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Customer ID to delete
+      responses:
+        '200':
+          description: Customer deleted successfully
+
+
+
+
+
+
+  /customers/search:
+    get:
+      tags: 
+        - Customers
+      summary: Search for a Customer by their Email
+      description: Search for a customer by their query parameter and recieve the customer info
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+          description: Customer email 
+      responses:
+        '200':
+          description: Customer retrieved successfully
+          schema:
+            $ref: '#/definitions/CustomerListResponse'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+definitions: 
+  SerializedPartResponse:
+    type: object
+    properties:
+      ticket_id:
+        type: integer
+      brand:
+        type: string
+      part:
+        type: string
+      part_id:
+        type: number
+        format: float
+
+  PartDescriptionPayload:
+    type: object
+    properties:
+      brand:
+        type: string
+      part:
+        type: string
+      price:
+        type: integer
+        format: float
+
+  PartDescriptionResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+      brand:
+        type: string
+      part:
+        type: string
+      price:
+        type: number
+        format: float
+
+  MechanicPayload:
+    type: object
+    properties:
+      name:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      salary:
+        type: integer
+
+  MechanicResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      salary:
+        type: integer
+        format: float
+      tickets:
+        type: array
+        items:
+          type: integer
+
+  MechanicTicketResponse:
+    type: object
+    properties:
+      message:
+        type: string
+      tickets:
+        type: array
+        items:
+          type: array
+          properties:
+            id:
+              type: integer
+            customer_id:
+              type: integer
+            date:
+              type: string
+            service_desc:
+              type: string
+
+  ServiceTicketResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+      customer_id:
+        type: integer
+      date:
+        type: string
+      service_desc:
+        type: string
+
+  MechanicListResponse:
+    type: array
+    items:
+      type: integer
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      salary:
+        type: integer
+        format: float
+      tickets:
+        type: array
+        items:
+          type: integer
+
+  CustomerResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+
+  CustomerListResponse:
+    type: array
+    items:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string

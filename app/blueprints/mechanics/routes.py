@@ -9,7 +9,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app.util.auth import encode_auth_token
 
 
-# login route
 @mechanics_bp.route('/login', methods=['POST'])
 def login_mechanic():
     try:
@@ -27,7 +26,6 @@ def login_mechanic():
     else:
         return jsonify({"error": "Invalid email or password"}), 401
 
-# Mechanic routes
 @mechanics_bp.route('/', methods=['POST'])
 def create_mechanic():
     try:

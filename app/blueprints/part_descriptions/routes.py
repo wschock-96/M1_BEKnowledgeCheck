@@ -50,7 +50,7 @@ def get_part_description(id):
     return jsonify({"error": "part description id not found"}), 404
 
 @part_descriptions_bp.route('/<int:id>', methods=['PUT'])
-@limiter.limit("5/hour")
+@limiter.limit("15/hour")
 def update_part_description(id):
     part_description = db.session.get(PartDescription, id)
 
@@ -79,20 +79,5 @@ def delete_part_description(id):
     db.session.delete(part_description)
     db.session.commit()
     return jsonify({"message": f"part description {id} deleted successfully"}), 200
-
-@part_descriptions_bp.route("/most-valuable", methods=['GET'])
-def get_most_valuable():
-    part_descriptions = db.session.execute(select(PartDescription)).scalars().all()
-    part_descriptions.sort(key=lambda part_description: len(part_description.tickets), reverse=True)
-    return part_descriptions_schema.jsonify(part_descriptions), 200
-
-@part_descriptions_bp.route("/search", methods=['GET'])
-def search_part_descriptions():
-    name = request.args.get('name')
-    print(name)
-    query = select(part_description).where(part_description.name.ilike(f"%{name}%"))
-    part_description = db.session.execute(query).scalars().first()
-    print(part_description)
-    return part_description_schema.jsonify(part_description)
 
     

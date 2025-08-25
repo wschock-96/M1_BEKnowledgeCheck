@@ -6,7 +6,7 @@ class SerializedPartSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = SerializedPart
         include_fk = True
-        include_relationships = False
+        load_instance = True
 
 serialized_part_schema = SerializedPartSchema()
 serialized_parts_schema = SerializedPartSchema(many=True)

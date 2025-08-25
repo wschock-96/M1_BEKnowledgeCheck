@@ -13,8 +13,12 @@ def encode_auth_token(user_id, role='user'):
         "sub": str(user_id),
         "role": role
     }
-    token = jwt.encode(payload, current_app.config["SECRET_KEY"], algorithm="HS256")
-    return token
+    # token = jwt.encode(payload, current_app.config["SECRET_KEY"], algorithm="HS256")
+    # return token
+
+    key = (current_app.config.get("SECRET_KEY") if current_app else SECRET_KEY)
+    return jwt.encode(payload, key, algorithm="HS256")
+
 
 def token_required(f):
     @wraps(f)

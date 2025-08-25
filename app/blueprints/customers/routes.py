@@ -54,7 +54,7 @@ def get_customer(id):
         return customer_schema.jsonify(customer), 200
     return jsonify({"error": "customer id not found"}), 404
 
-@customers_bp.route('/customers/<int:id>', methods=['PUT'])
+@customers_bp.route('/<int:id>', methods=['PUT'])
 @limiter.limit("15 per hour", override_defaults=True)
 def update_customer(id):
     customer = db.session.get(Customer, id)
@@ -73,7 +73,7 @@ def update_customer(id):
     db.session.commit()
     return customer_schema.jsonify(customer), 200
 
-@customers_bp.route('//<int:id>', methods=['DELETE'])
+@customers_bp.route('/<int:id>', methods=['DELETE'])
 @limiter.limit("3 per hour", override_defaults=True)
 def delete_customer(id):
     customer = db.session.get(Customer, id)
@@ -96,8 +96,8 @@ def search_customers():
     email = request.args.get('email')
 
     query = select(Customer).where(Customer.email.ilike(f"%{email}%"))
-    customer = db.session.execute(query).scalars().first()
+    customer = db.session.execute(query).scalars().all()
 
-    return customer_schema.jsonify(customer)
+    return customers_schema.jsonify(customer)
 
     

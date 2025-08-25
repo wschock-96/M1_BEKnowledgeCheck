@@ -8,7 +8,7 @@ from flask_caching import Cache
 class Base(DeclarativeBase):
     pass
 
-db = SQLAlchemy()
+db = SQLAlchemy(model_class=Base)
 ma = Marshmallow()
 limiter = Limiter(key_func=get_remote_address)
 cache = Cache()
