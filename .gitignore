@@ -1,0 +1,4 @@
+__pycache__/
+venv/
+.env
+SQLALCHEMY_DATABASE_URI = 'postgresql://billys:ZE6XzbOR37CoK1sNY8oMfWtK3nfgzCPP@dpg-d2m85tnfte5s739gftjg-a.oregon-postgres.render.com/my_mechanic_shop_db_akwl'

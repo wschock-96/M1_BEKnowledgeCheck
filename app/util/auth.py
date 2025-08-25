@@ -3,8 +3,9 @@ import jose
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from flask import request, jsonify, current_app
+import os
 
-SECRET_KEY = "your_secret_key"
+SECRET_KEY = os.environ.get('SECRET_KEY') or "your_secret_key"
 
 def encode_auth_token(user_id, role='user'):
     payload = {
