@@ -1,0 +1,87 @@
+name : Flask CI/CD
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Create Virtual Environment
+      run: |
+        python -m venv venv 
+        source venv/bin/activate
+
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Print Debugging Info
+      run: |
+        echo "Python Version: $(python --version)"
+        echo "Pip working directory: $(pwd)"
+        echo "Contents of Working Directory: $(ls -l)"
+        echo "Contents of Site Packages: $(ls -l venv/lib/python3.8/site-packages)"
+
+tests:
+  needs: build
+    runs-on: ubuntu-latest
+
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Create Virtual Environment
+      run: |
+        python -m venv venv 
+        source venv/bin/activate
+
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+
+    - name: Run tests
+      run: |
+        source venv/bin/activate
+        pytest
+
+    - name: Build Docker image
+      run: |
+        docker build -t my-flask-app .
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Push Docker image
+      run: |
+        docker tag my-flask-app:latest my-dockerhub-username/my-flask-app:latest
+        docker push my-dockerhub-username/my-flask-app:latest
+
+    - name: Deploy to Heroku
+      uses: akhileshns/heroku-deploy@v3.12.12
+      with:
+        heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+        heroku_app_name: "my-flask-app"
+        heroku_email: ""
+
+    
